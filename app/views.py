@@ -3,6 +3,7 @@ from app import app, db, login_manager
 from flask import render_template, request, redirect, url_for, flash, session, abort
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.utils import secure_filename
+from werkzeug.security import check_password_hash
 from app.models import UserProfile
 from app.forms import LoginForm
 
@@ -54,6 +55,14 @@ def login():
 
         # Gets user id, load into session
         login_user(user)
+    if form.validate_on_submit():
+        user = UserProfile.query.filter_by(username=form.username.data).first()
+        if user and check_password_hash(user.password, form.password.data):
+            login_user(user)
+            flash('Logged in successfully.')
+            return redirect(url_for("upload")) 
+        else:
+            flash('Login Unsuccessful. Please check username and password')
 
         # Remember to flash a message to the user
         return redirect(url_for("home"))  # The user should be redirected to the upload form instead
