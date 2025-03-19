@@ -1,6 +1,6 @@
 import os
 from app import app, db, login_manager
-from flask import render_template, request, redirect, url_for, flash, session, abort
+from flask import render_template, request, redirect, url_for, flash, session, abort, send_from_directory
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
@@ -43,6 +43,26 @@ def upload():
 
         return render_template('upload.html')
     return render_template('upload.html', form=form)
+
+
+
+def get_uploaded_images():
+    upload_folder = app.config['UPLOAD_FOLDER']
+    uploaded_images = []
+    for subdir, dirs, files in os.walk(os.getcwd() + upload_folder):
+        for file in files:
+            uploaded_images.append(file)
+    return uploaded_images
+
+@app.route('/uploads/<filename>')
+def get_image(filename):
+    upload_folder = app.config['UPLOAD_FOLDER']
+    return send_from_directory(os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER']), filename)
+
+@app.route('/files')
+def files():
+ 
+    return render_template("files.html" , imgs = get_uploaded_images(), urr = app.config['UPLOAD_FOLDER'])
 
 
 @app.route('/login', methods=['POST', 'GET'])
